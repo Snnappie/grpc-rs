@@ -15,7 +15,7 @@ extern crate cc;
 extern crate cmake;
 
 use std::path::Path;
-use std::{env, fs, io};
+use std::{env, fs, io, process};
 
 use cmake::Config;
 use cc::Build;
@@ -47,6 +47,16 @@ fn is_directory_empty<P: AsRef<Path>>(p: P) -> Result<bool, io::Error> {
     Ok(entries.next().is_none())
 }
 
+// Check if the build environment has ninja installed. If so, we will use it as the
+// generator instead of the standard make generator. According to the grpc INSTALL.md doc,
+// doing so enables boringssl assembly optimizations.
+fn has_ninja() -> bool {
+    process::Command::new("ninja")
+        .arg("--version")
+        .status()
+        .is_ok()
+}
+
 fn build_grpc(cc: &mut Build, library: &str) {
     prepare_grpc();
 
@@ -54,6 +64,10 @@ fn build_grpc(cc: &mut Build, library: &str) {
         let mut config = Config::new("grpc");
         if cfg!(target_os = "macos") {
             config.cxxflag("-stdlib=libc++");
+        }
+
+        if has_ninja() {
+            config.generator("Ninja");
         }
         config.build_target(library).uses_cxx11().build()
     };
@@ -95,6 +109,7 @@ fn build_grpc(cc: &mut Build, library: &str) {
     }
 
     println!("cargo:rustc-link-lib=static={}", zlib);
+    println!("cargo:rustc-link-lib=static=address_sorting");
     println!("cargo:rustc-link-lib=static=cares");
     println!("cargo:rustc-link-lib=static=gpr");
     println!("cargo:rustc-link-lib=static={}", library);
@@ -131,5 +146,5 @@ fn main() {
         cc.flag("-std=c++11");
     }
 
-    cc.warnings_into_errors(true).compile("libgrpc_wrap.a");
+    cc.compile("libgrpc_wrap.a");
 }
