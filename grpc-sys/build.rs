@@ -125,7 +125,7 @@ fn build_grpc(cc: &mut Build, library: &str) {
 fn main() {
     let mut cc = Build::new();
 
-    println!("cargo:rerun-if-changed=grpc_wrap.c");
+    println!("cargo:rerun-if-changed=grpc_wrap.cc");
     println!("cargo:rerun-if-changed=grpc");
 
     let library = if cfg!(feature = "secure") {
