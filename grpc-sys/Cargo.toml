@@ -58,6 +58,7 @@ secure = []
 openssl = ["secure"]
 openssl-vendored = ["openssl", "openssl-sys"]
 no-omit-frame-pointer = []
+cronet = []
 
 [build-dependencies]
 cc = "1.0"

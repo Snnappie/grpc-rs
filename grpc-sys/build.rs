@@ -179,6 +179,7 @@ fn build_grpc(cc: &mut Build, library: &str) {
     println!("cargo:rustc-link-lib=static=gpr");
     println!("cargo:rustc-link-lib=static=address_sorting");
     println!("cargo:rustc-link-lib=static={}", library);
+    // println!("cargo:rustc-link-lib=static=upb");
 
     if cfg!(feature = "secure") {
         if cfg!(feature = "openssl") && !cfg!(feature = "openssl-vendored") {
@@ -362,7 +363,9 @@ fn main() {
     let mut cc = Build::new();
     let mut bind_config = bindgen::Builder::default();
 
-    let library = if cfg!(feature = "secure") {
+    let library = if cfg!(feature = "cronet") {
+        "grpc_cronet"
+    } else if cfg!(feature = "secure") {
         cc.define("GRPC_SYS_SECURE", None);
         bind_config = bind_config.clang_arg("-DGRPC_SYS_SECURE");
         "grpc"
