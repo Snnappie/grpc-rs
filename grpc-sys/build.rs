@@ -364,6 +364,8 @@ fn main() {
     let mut bind_config = bindgen::Builder::default();
 
     let library = if cfg!(feature = "cronet") {
+        cc.define("GRPC_SYS_SECURE", None);
+        bind_config = bind_config.clang_arg("-DGRPC_SYS_SECURE");
         "grpc_cronet"
     } else if cfg!(feature = "secure") {
         cc.define("GRPC_SYS_SECURE", None);
